@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Header } from '@/components/Header';
 import { TopicSelector } from '@/components/TopicSelector';
@@ -44,6 +44,9 @@ const Index = () => {
 
   // Timer
   const [totalTime, setTotalTime] = useState(180);
+
+  // Fullscreen
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Sound effects
   const { 
@@ -71,6 +74,28 @@ const Index = () => {
     setTotalTime(seconds);
     timer.start(seconds);
   }, [timer]);
+
+  const handleToggleFullscreen = useCallback(async () => {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+      return;
+    }
+
+    await document.exitFullscreen();
+    setIsFullscreen(false);
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // Update topic config
   const updateTopicConfig = (index: number, updates: Partial<TopicConfig>) => {
@@ -117,9 +142,10 @@ const Index = () => {
   }, [topicConfigs, questionCount, playSuccessSound]);
 
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/40 relative">
       {/* Animated Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-grid opacity-40" />
         <motion.div 
           className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-primary/8 to-transparent rounded-full blur-3xl"
           animate={{ 
@@ -148,7 +174,11 @@ const Index = () => {
       </div>
 
       <div className="relative z-10">
-        <Header onPlayHover={playHoverSound} />
+        <Header
+          onPlayHover={playHoverSound}
+          onToggleFullscreen={handleToggleFullscreen}
+          isFullscreen={isFullscreen}
+        />
 
         <main className="max-w-7xl mx-auto px-4 md:px-8 pb-8">
           {/* Control Panel */}

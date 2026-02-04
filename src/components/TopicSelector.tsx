@@ -93,7 +93,7 @@ export const TopicSelector = ({
         <div className="mb-4">
           <input
             type="text"
-            placeholder="🔍 Search topics..."
+            placeholder="Search topics..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             onClick={onPlayClick}
@@ -113,7 +113,7 @@ export const TopicSelector = ({
           >
             {selectedTopicData
               ? `${selectedTopicData.category}: ${selectedTopicData.name}`
-              : '🎲 Random'}
+              : 'Random'}
           </motion.button>
 
           <AnimatePresence>
@@ -136,7 +136,7 @@ export const TopicSelector = ({
                     selectedTopic === 'random' ? 'bg-primary/10 text-primary font-medium' : ''
                   }`}
                 >
-                  🎲 Random
+                  Random
                 </motion.button>
                 
                 {Object.entries(groupedTopics).map(([category, topics]) => (
@@ -170,7 +170,7 @@ export const TopicSelector = ({
         {/* Difficulty Controls */}
         <div className="space-y-3">
           <label className="text-sm font-medium text-foreground flex items-center gap-2">
-            ⚡ Difficulty
+            Difficulty
           </label>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">

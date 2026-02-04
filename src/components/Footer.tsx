@@ -51,7 +51,7 @@ export const Footer = () => {
                 className="text-center md:text-left"
                 whileHover={{ scale: 1.02 }}
               >
-                <p className="text-sm text-muted-foreground mb-1">Created with ❤️ by</p>
+                <p className="text-sm text-muted-foreground mb-1">Created with care by</p>
                 <p className="text-xl font-bold text-foreground">Arslan Sohail</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   A Student Tool for Mr. Yeung's Class
@@ -100,7 +100,7 @@ export const Footer = () => {
             <div className="border-t border-border/50 pt-6">
               <div className="text-center mb-4">
                 <p className="text-sm font-semibold text-foreground">
-                  🏫 Made for Mr. Yeung: M10E-2 • E Slot • DCI-25/26
+                  Made for Mr. Yeung: M10E-2 • E Slot • DCI-25/26
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Dakota Collegiate • Winnipeg, Manitoba
@@ -135,7 +135,7 @@ export const Footer = () => {
 
             {/* Copyright */}
             <div className="text-center text-xs text-muted-foreground">
-              <p>© 2024-2026 • Built by a student, for students 📚</p>
+              <p>© 2024-2026 • Built by a student, for students</p>
             </div>
           </div>
         </div>

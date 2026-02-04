@@ -44,16 +44,16 @@ export const QuestionDisplay = ({
               ease: "easeInOut"
             }}
           >
-            <span className="text-4xl">📝</span>
+            <span className="text-2xl font-semibold text-primary">Q</span>
           </motion.div>
           <h3 className="text-xl font-bold text-foreground mb-3">
-            Ready to Challenge Your Brain? 🧠
+            Ready to challenge your brain?
           </h3>
           <p className="text-muted-foreground mb-4">
             Select your topics above and click <span className="text-primary font-semibold">"Create Questions"</span> to start!
           </p>
           <p className="text-sm text-muted-foreground">
-            💡 Pro tip: Start the timer for an extra challenge!
+            Pro tip: start the timer for an extra challenge.
           </p>
         </motion.div>
       </motion.div>
@@ -117,7 +117,7 @@ export const QuestionDisplay = ({
                       className="mt-4 pt-4 border-t border-border/50"
                     >
                       <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                        ✅ Answer:
+                        Answer:
                       </span>
                       <motion.p
                         initial={{ x: -10 }}

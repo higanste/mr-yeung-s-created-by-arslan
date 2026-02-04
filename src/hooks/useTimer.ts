@@ -48,8 +48,10 @@ export const useTimer = (onTick?: (timeLeft: number) => void, onFinish?: () => v
 
   const stop = useCallback(() => {
     clearTimer();
+    setTimeLeft(0);
     setIsRunning(false);
     setIsPaused(false);
+    setIsFinished(false);
   }, [clearTimer]);
 
   const reset = useCallback((seconds: number) => {

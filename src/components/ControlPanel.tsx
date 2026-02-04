@@ -47,7 +47,7 @@ export const ControlPanel = ({
           onHoverStart={onPlayHover}
         >
           <label className="text-sm font-medium text-foreground whitespace-nowrap flex items-center gap-1">
-            📝 Questions:
+            Questions:
           </label>
           <input
             type="number"
@@ -67,7 +67,7 @@ export const ControlPanel = ({
           onHoverStart={onPlayHover}
         >
           <label className="text-sm font-medium text-foreground whitespace-nowrap flex items-center gap-1">
-            📊 Columns:
+            Columns:
           </label>
           <select
             value={columns}
@@ -91,7 +91,7 @@ export const ControlPanel = ({
           onHoverStart={onPlayHover}
         >
           <label className="text-sm font-medium text-foreground whitespace-nowrap flex items-center gap-1">
-            🔤 Font:
+            Font:
           </label>
           <input
             type="number"
@@ -118,17 +118,16 @@ export const ControlPanel = ({
           >
             {isLoading ? (
               <>
-                <motion.div
+                <motion.span
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  ⚙️
-                </motion.div>
+                  className="inline-flex w-4 h-4 rounded-full border-2 border-primary border-t-transparent"
+                />
                 Creating...
               </>
             ) : (
               <>
-                ✨ Create Questions
+                Create Questions
               </>
             )}
           </motion.button>
@@ -144,7 +143,7 @@ export const ControlPanel = ({
               showAnswers ? 'bg-accent/20 text-accent border-accent/50' : ''
             }`}
           >
-            {showAnswers ? '🙈 Hide Answers' : '👀 Show Answers'}
+            {showAnswers ? 'Hide Answers' : 'Show Answers'}
           </motion.button>
         </div>
       </div>
