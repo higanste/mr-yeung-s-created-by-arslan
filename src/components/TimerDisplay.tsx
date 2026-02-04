@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { getRandomTimerMessage, getRandomEncouragement } from '@/data/classmates';
 
 interface TimerDisplayProps {
   timeLeft: number;
@@ -12,6 +13,9 @@ interface TimerDisplayProps {
   onResume: () => void;
   onStop: () => void;
   onPlayClick?: () => void;
+  onPlayStart?: () => void;
+  onPlayPause?: () => void;
+  onPlayResume?: () => void;
 }
 
 export const TimerDisplay = ({
@@ -25,9 +29,14 @@ export const TimerDisplay = ({
   onResume,
   onStop,
   onPlayClick,
+  onPlayStart,
+  onPlayPause,
+  onPlayResume,
 }: TimerDisplayProps) => {
-  const [customTime, setCustomTime] = useState(180); // 3 minutes default
+  const [customTime, setCustomTime] = useState(180);
   const [showCustomInput, setShowCustomInput] = useState(false);
+  const [finishMessage, setFinishMessage] = useState("");
+  const [encouragement, setEncouragement] = useState("");
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -36,9 +45,21 @@ export const TimerDisplay = ({
 
   const getTimerClass = () => {
     if (!isRunning || isPaused) return 'text-foreground';
+    if (timeLeft <= 3) return 'timer-danger animate-pulse';
     if (timeLeft <= 10) return 'timer-danger';
     if (timeLeft <= 30) return 'timer-warning';
     return 'timer-safe';
+  };
+
+  const handleStart = (secs: number) => {
+    setFinishMessage("");
+    setEncouragement(getRandomEncouragement());
+    onPlayStart?.();
+    onStart(secs);
+  };
+
+  const handleFinishMessageGenerate = () => {
+    setFinishMessage(getRandomTimerMessage());
   };
 
   const presetTimes = [
@@ -48,47 +69,98 @@ export const TimerDisplay = ({
     { label: '5 min', seconds: 300 },
   ];
 
+  // Generate finish message when timer ends
+  if (isFinished && !finishMessage) {
+    handleFinishMessageGenerate();
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="glass-card rounded-2xl p-6 text-center"
+      className="glass-card rounded-2xl p-6 md:p-8 text-center relative overflow-hidden"
     >
+      {/* Animated background pulse when running */}
+      {isRunning && !isPaused && timeLeft <= 10 && (
+        <motion.div
+          className="absolute inset-0 bg-destructive/10"
+          animate={{ opacity: [0.1, 0.3, 0.1] }}
+          transition={{ duration: 0.5, repeat: Infinity }}
+        />
+      )}
+
+      {/* Encouragement message */}
+      <AnimatePresence>
+        {isRunning && !isPaused && encouragement && (
+          <motion.p
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="text-sm text-muted-foreground mb-4"
+          >
+            {encouragement}
+          </motion.p>
+        )}
+      </AnimatePresence>
+
       {/* Timer Display */}
-      <div className="mb-6">
+      <div className="mb-6 relative z-10">
         <AnimatePresence mode="wait">
           <motion.div
             key={timeLeft}
-            initial={timeLeft <= 10 && isRunning ? { scale: 1.1 } : { scale: 1 }}
+            initial={timeLeft <= 10 && isRunning ? { scale: 1.15 } : { scale: 1 }}
             animate={{ scale: 1 }}
-            transition={{ duration: 0.2 }}
-            className={`timer-display text-6xl md:text-7xl font-bold ${getTimerClass()}`}
+            transition={{ duration: 0.15, type: "spring", stiffness: 500 }}
+            className={`timer-display text-6xl md:text-8xl font-bold ${getTimerClass()}`}
           >
             {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
           </motion.div>
         </AnimatePresence>
         
-        {isFinished && (
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-accent font-semibold mt-2"
-          >
-            Time's up!
-          </motion.p>
-        )}
+        {/* Finish message with roast */}
+        <AnimatePresence>
+          {isFinished && finishMessage && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0 }}
+              className="mt-4 p-4 bg-accent/10 rounded-xl border border-accent/30"
+            >
+              <p className="text-lg md:text-xl font-semibold text-foreground">
+                {finishMessage}
+              </p>
+              <button
+                onClick={() => {
+                  onPlayClick?.();
+                  setFinishMessage(getRandomTimerMessage());
+                }}
+                className="mt-3 text-sm text-accent hover:text-accent/80 underline transition-colors"
+              >
+                🎲 Another roast?
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Progress Bar */}
-      <div className="h-2 bg-secondary rounded-full overflow-hidden mb-6">
+      <div className="h-3 bg-secondary rounded-full overflow-hidden mb-6 relative">
         <motion.div
           className={`h-full transition-colors duration-300 ${
             timeLeft <= 10 ? 'bg-destructive' : timeLeft <= 30 ? 'bg-timer-warning' : 'bg-accent'
           }`}
           initial={{ width: '100%' }}
           animate={{ width: `${progressPercent}%` }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3 }}
         />
+        {/* Glow effect for urgency */}
+        {isRunning && !isPaused && timeLeft <= 10 && (
+          <motion.div
+            className="absolute inset-0 bg-destructive/50 blur-sm"
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 0.3, repeat: Infinity }}
+          />
+        )}
       </div>
 
       {/* Controls */}
@@ -97,18 +169,19 @@ export const TimerDisplay = ({
           {/* Preset Buttons */}
           <div className="flex flex-wrap gap-2 justify-center">
             {presetTimes.map((preset) => (
-              <button
+              <motion.button
                 key={preset.seconds}
-                onClick={() => {
-                  onPlayClick?.();
-                  onStart(preset.seconds);
-                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleStart(preset.seconds)}
                 className="btn-secondary text-sm"
               >
                 {preset.label}
-              </button>
+              </motion.button>
             ))}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 onPlayClick?.();
                 setShowCustomInput(!showCustomInput);
@@ -116,7 +189,7 @@ export const TimerDisplay = ({
               className="btn-secondary text-sm"
             >
               Custom
-            </button>
+            </motion.button>
           </div>
 
           {/* Custom Time Input */}
@@ -138,16 +211,17 @@ export const TimerDisplay = ({
                   placeholder="Seconds"
                 />
                 <span className="text-sm text-muted-foreground">seconds</span>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => {
-                    onPlayClick?.();
-                    onStart(customTime);
+                    handleStart(customTime);
                     setShowCustomInput(false);
                   }}
                   className="btn-primary text-sm"
                 >
                   Start
-                </button>
+                </motion.button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -155,19 +229,54 @@ export const TimerDisplay = ({
       ) : (
         <div className="flex gap-3 justify-center">
           {isPaused ? (
-            <button onClick={() => { onPlayClick?.(); onResume(); }} className="btn-accent">
-              Resume
-            </button>
-          ) : (
-            <button onClick={() => { onPlayClick?.(); onPause(); }} className="btn-secondary">
-              Pause
-            </button>
-          )}
-          <button onClick={() => { onPlayClick?.(); onStop(); }} className="btn-secondary">
-            Stop
-          </button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                onPlayResume?.();
+                onResume();
+              }}
+              className="btn-accent"
+            >
+              ▶️ Resume
+            </motion.button>
+          ) : isRunning ? (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                onPlayPause?.();
+                onPause();
+              }}
+              className="btn-secondary"
+            >
+              ⏸️ Pause
+            </motion.button>
+          ) : null}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              onPlayClick?.();
+              setFinishMessage("");
+              onStop();
+            }}
+            className="btn-secondary"
+          >
+            ⏹️ Stop
+          </motion.button>
         </div>
       )}
+
+      {/* Class info badge */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="mt-6 text-xs text-muted-foreground"
+      >
+        🏫 Dakota Collegiate • M10E-2 • E Slot
+      </motion.div>
     </motion.div>
   );
 };
