@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Header } from '@/components/Header';
 import { TopicSelector } from '@/components/TopicSelector';
@@ -44,6 +44,9 @@ const Index = () => {
 
   // Timer
   const [totalTime, setTotalTime] = useState(180);
+
+  // Fullscreen
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Sound effects
   const { 
@@ -71,6 +74,28 @@ const Index = () => {
     setTotalTime(seconds);
     timer.start(seconds);
   }, [timer]);
+
+  const handleToggleFullscreen = useCallback(async () => {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+      setIsFullscreen(true);
+      return;
+    }
+
+    await document.exitFullscreen();
+    setIsFullscreen(false);
+  }, []);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // Update topic config
   const updateTopicConfig = (index: number, updates: Partial<TopicConfig>) => {
@@ -148,7 +173,11 @@ const Index = () => {
       </div>
 
       <div className="relative z-10">
-        <Header onPlayHover={playHoverSound} />
+        <Header
+          onPlayHover={playHoverSound}
+          onToggleFullscreen={handleToggleFullscreen}
+          isFullscreen={isFullscreen}
+        />
 
         <main className="max-w-7xl mx-auto px-4 md:px-8 pb-8">
           {/* Control Panel */}

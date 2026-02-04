@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getRandomTimerMessage, getRandomEncouragement } from '@/data/classmates';
 
 interface TimerDisplayProps {
@@ -37,6 +37,8 @@ export const TimerDisplay = ({
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [finishMessage, setFinishMessage] = useState("");
   const [encouragement, setEncouragement] = useState("");
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [voiceSupported, setVoiceSupported] = useState(false);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -58,9 +60,23 @@ export const TimerDisplay = ({
     onStart(secs);
   };
 
-  const handleFinishMessageGenerate = () => {
+  const handleFinishMessageGenerate = useCallback(() => {
     setFinishMessage(getRandomTimerMessage());
-  };
+  }, []);
+
+  const speakFinishMessage = useCallback((message: string) => {
+    if (!voiceEnabled || !voiceSupported) {
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    utterance.lang = 'en-US';
+    window.speechSynthesis.speak(utterance);
+  }, [voiceEnabled, voiceSupported]);
 
   const presetTimes = [
     { label: '1 min', seconds: 60 },
@@ -69,10 +85,21 @@ export const TimerDisplay = ({
     { label: '5 min', seconds: 300 },
   ];
 
-  // Generate finish message when timer ends
-  if (isFinished && !finishMessage) {
-    handleFinishMessageGenerate();
-  }
+  useEffect(() => {
+    if (isFinished && !finishMessage) {
+      handleFinishMessageGenerate();
+    }
+  }, [isFinished, finishMessage, handleFinishMessageGenerate]);
+
+  useEffect(() => {
+    setVoiceSupported(typeof window !== 'undefined' && 'speechSynthesis' in window);
+  }, []);
+
+  useEffect(() => {
+    if (isFinished && finishMessage) {
+      speakFinishMessage(finishMessage);
+    }
+  }, [finishMessage, isFinished, speakFinishMessage]);
 
   return (
     <motion.div
@@ -132,7 +159,8 @@ export const TimerDisplay = ({
               <button
                 onClick={() => {
                   onPlayClick?.();
-                  setFinishMessage(getRandomTimerMessage());
+                  const nextMessage = getRandomTimerMessage();
+                  setFinishMessage(nextMessage);
                 }}
                 className="mt-3 text-sm text-accent hover:text-accent/80 underline transition-colors"
               >
@@ -267,6 +295,22 @@ export const TimerDisplay = ({
           </motion.button>
         </div>
       )}
+
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1">
+          🔊 Voice roast:
+        </span>
+        <button
+          type="button"
+          onClick={() => setVoiceEnabled((prev) => !prev)}
+          className="px-2 py-1 rounded-full bg-secondary/70 text-foreground transition-colors hover:bg-secondary"
+        >
+          {voiceEnabled ? 'On' : 'Off'}
+        </button>
+        {!voiceSupported && (
+          <span className="text-xs text-muted-foreground">(Not supported)</span>
+        )}
+      </div>
 
       {/* Class info badge */}
       <motion.div
