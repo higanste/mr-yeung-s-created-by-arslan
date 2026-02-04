@@ -46,7 +46,16 @@ const Index = () => {
   const [totalTime, setTotalTime] = useState(180);
   
   // Sound effects
-  const { playCountdownBeep, playFinishSound, playClickSound, playSuccessSound } = useBeepSound();
+  const { 
+    playCountdownBeep, 
+    playFinishSound, 
+    playClickSound, 
+    playSuccessSound,
+    playHoverSound,
+    playStartSound,
+    playPauseSound,
+    playResumeSound,
+  } = useBeepSound();
 
   const handleTimerTick = useCallback((timeLeft: number) => {
     playCountdownBeep(timeLeft);
@@ -108,19 +117,47 @@ const Index = () => {
   }, [topicConfigs, questionCount, playSuccessSound]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Background Pattern */}
+    <div className="min-h-screen bg-background relative">
+      {/* Animated Background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl" />
-        <div className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-accent/5 to-transparent rounded-full blur-3xl" />
+        <motion.div 
+          className="absolute -top-1/2 -right-1/2 w-full h-full bg-gradient-to-br from-primary/8 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            rotate: [0, 10, 0],
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div 
+          className="absolute -bottom-1/2 -left-1/2 w-full h-full bg-gradient-to-tr from-accent/8 to-transparent rounded-full blur-3xl"
+          animate={{ 
+            scale: [1, 1.15, 1],
+            rotate: [0, -10, 0],
+          }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Extra floating orb */}
+        <motion.div 
+          className="absolute top-1/4 left-1/3 w-64 h-64 bg-primary/5 rounded-full blur-2xl"
+          animate={{ 
+            x: [0, 50, 0],
+            y: [0, -30, 0],
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        />
       </div>
 
       <div className="relative z-10">
-        <Header />
+        <Header onPlayHover={playHoverSound} />
 
         <main className="max-w-7xl mx-auto px-4 md:px-8 pb-8">
           {/* Control Panel */}
-          <div className="mb-8">
+          <motion.div 
+            className="mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
             <ControlPanel
               questionCount={questionCount}
               onQuestionCountChange={setQuestionCount}
@@ -132,9 +169,10 @@ const Index = () => {
               onShowAnswersChange={setShowAnswers}
               onCreateQuestions={handleCreateQuestions}
               onPlayClick={playClickSound}
+              onPlayHover={playHoverSound}
               isLoading={isLoading}
             />
-          </div>
+          </motion.div>
 
           {/* Topic Selectors Grid */}
           <motion.div
@@ -156,6 +194,7 @@ const Index = () => {
                 searchQuery={config.searchQuery}
                 onSearchChange={(query) => updateTopicConfig(index, { searchQuery: query })}
                 onPlayClick={playClickSound}
+                onPlayHover={playHoverSound}
               />
             ))}
           </motion.div>
@@ -178,6 +217,9 @@ const Index = () => {
               onResume={timer.resume}
               onStop={timer.stop}
               onPlayClick={playClickSound}
+              onPlayStart={playStartSound}
+              onPlayPause={playPauseSound}
+              onPlayResume={playResumeSound}
             />
           </motion.div>
 
@@ -192,6 +234,7 @@ const Index = () => {
               showAnswers={showAnswers}
               columns={columns}
               fontSize={fontSize}
+              onPlayHover={playHoverSound}
             />
           </motion.div>
         </main>

@@ -2,9 +2,10 @@ import { motion } from 'framer-motion';
 
 interface HeaderProps {
   onOpenSettings?: () => void;
+  onPlayHover?: () => void;
 }
 
-export const Header = ({ onOpenSettings }: HeaderProps) => {
+export const Header = ({ onOpenSettings, onPlayHover }: HeaderProps) => {
   return (
     <motion.header 
       initial={{ opacity: 0, y: -20 }}
@@ -13,45 +14,47 @@ export const Header = ({ onOpenSettings }: HeaderProps) => {
       className="w-full py-6 px-4 md:px-8"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-xl">π</span>
-          </div>
+        <motion.div 
+          className="flex items-center gap-3"
+          whileHover={{ scale: 1.02 }}
+          onHoverStart={onPlayHover}
+        >
+          <motion.div 
+            className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30"
+            whileHover={{ rotate: [0, -10, 10, 0] }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="text-primary-foreground font-bold text-2xl">π</span>
+          </motion.div>
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-foreground">
               Mr. Yeung's Math Challenge
             </h1>
-            <p className="text-xs md:text-sm text-muted-foreground">
-              Class M10E-2 • E Slot • DCI-25/26
+            <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-2">
+              <span className="inline-flex items-center gap-1">
+                🏫 Dakota Collegiate
+              </span>
+              <span className="text-border">•</span>
+              <span>M10E-2</span>
+              <span className="text-border">•</span>
+              <span>E Slot</span>
             </p>
           </div>
-        </div>
+        </motion.div>
         
-        <button
-          onClick={onOpenSettings}
-          className="p-2 rounded-lg hover:bg-secondary transition-colors"
-          aria-label="Settings"
+        <motion.div 
+          className="flex items-center gap-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
         >
-          <svg 
-            className="w-6 h-6 text-muted-foreground" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
+          <motion.span 
+            className="hidden md:block text-xs text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full"
+            whileHover={{ scale: 1.05 }}
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" 
-            />
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" 
-            />
-          </svg>
-        </button>
+            DCI-25/26 📚
+          </motion.span>
+        </motion.div>
       </div>
     </motion.header>
   );
