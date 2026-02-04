@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getRandomTimerMessage, getRandomEncouragement } from '@/data/classmates';
 
 interface TimerDisplayProps {
@@ -58,9 +58,9 @@ export const TimerDisplay = ({
     onStart(secs);
   };
 
-  const handleFinishMessageGenerate = () => {
+  const handleFinishMessageGenerate = useCallback(() => {
     setFinishMessage(getRandomTimerMessage());
-  };
+  }, []);
 
   const presetTimes = [
     { label: '1 min', seconds: 60 },
@@ -69,10 +69,11 @@ export const TimerDisplay = ({
     { label: '5 min', seconds: 300 },
   ];
 
-  // Generate finish message when timer ends
-  if (isFinished && !finishMessage) {
-    handleFinishMessageGenerate();
-  }
+  useEffect(() => {
+    if (isFinished && !finishMessage) {
+      handleFinishMessageGenerate();
+    }
+  }, [isFinished, finishMessage, handleFinishMessageGenerate]);
 
   return (
     <motion.div
