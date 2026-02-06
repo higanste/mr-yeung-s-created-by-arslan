@@ -58,17 +58,18 @@ export function Timer({ onFinish }: TimerProps) {
     };
 
     return (
-        <div className={`flex items-center gap-4 border px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg transition-all duration-300 ${timeLeft <= 10 && timeLeft > 0 && isRunning ? 'bg-red-500/20 border-red-500 animate-shake shadow-[0_0_50px_rgba(255,0,0,0.4)]' : 'bg-white/5 border-white/10'}`}>
+
+        <div className={`flex flex-col md:flex-row items-center gap-4 border px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg transition-all duration-300 ${timeLeft <= 10 && timeLeft > 0 && isRunning ? 'bg-red-500/20 border-red-500 animate-shake shadow-[0_0_50px_rgba(255,0,0,0.4)]' : 'bg-white/5 border-white/10'}`}>
             {/* Display */}
             <div className={`font-mono text-4xl font-bold tracking-widest tabular-nums ${timeLeft <= 10 && timeLeft > 0 ? 'text-red-500 animate-pulse scale-110' : 'text-white'}`}>
                 {formatTime(timeLeft)}
             </div>
 
             {/* Controls */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap justify-center items-center gap-2">
                 {!isRunning ? (
                     <>
-                        <div className="flex flex-col gap-1 mr-2">
+                        <div className="flex flex-col gap-1 mr-2 items-center">
                             {/* QUICK ADDS */}
                             <div className="flex gap-1">
                                 <button onClick={() => setTimeLeft(60)} className="px-2 py-1 text-xs bg-white/5 hover:bg-neon-cyan/20 text-gray-400 hover:text-neon-cyan rounded transition-colors border border-white/5">+1m</button>
