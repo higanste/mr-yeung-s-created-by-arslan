@@ -38,14 +38,14 @@ export function RosterPicker() {
     // Text-To-Speech
     const speak = (text: string) => {
         if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(text);
+            // Remove emojis using regex
+            const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '');
+            
+            const utterance = new SpeechSynthesisUtterance(cleanText);
             const voices = window.speechSynthesis.getVoices();
-            // Try to find a specific fun voice if available, otherwise default
-            // "Google US English" is usually decent.
             const preferred = voices.find(v => v.name.includes('Google US English')) || voices[0];
             if (preferred) utterance.voice = preferred;
             utterance.rate = 1.1;
-            // Pitch shift: Roasts deeper, Praise higher
             utterance.pitch = messageType === 'roast' ? 0.8 : 1.2;
 
             window.speechSynthesis.speak(utterance);
@@ -100,6 +100,15 @@ export function RosterPicker() {
             saveUsedRoast(msg);
         } else {
             msg = PRAISES[Math.floor(Math.random() * PRAISES.length)];
+        }
+        
+        // Play Sound Effect (using victory sound for now)
+        try {
+            const audio = new Audio('/sounds/victory.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(e => console.log("Audio play failed", e));
+        } catch (e) {
+            console.error("Audio error", e);
         }
 
         setTimeout(() => {
