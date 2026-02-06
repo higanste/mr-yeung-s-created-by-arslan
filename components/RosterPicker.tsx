@@ -40,7 +40,7 @@ export function RosterPicker() {
         if ('speechSynthesis' in window) {
             // Remove emojis using regex
             const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '');
-            
+
             const utterance = new SpeechSynthesisUtterance(cleanText);
             const voices = window.speechSynthesis.getVoices();
             const preferred = voices.find(v => v.name.includes('Google US English')) || voices[0];
@@ -101,7 +101,7 @@ export function RosterPicker() {
         } else {
             msg = PRAISES[Math.floor(Math.random() * PRAISES.length)];
         }
-        
+
         // Play Sound Effect (using victory sound for now)
         try {
             const audio = new Audio('/sounds/victory.mp3');
@@ -138,66 +138,84 @@ export function RosterPicker() {
     };
 
     return (
-        <div className="w-full max-w-3xl mx-auto mt-8">
-            <div className="glass-panel p-10 rounded-3xl border border-white/10 flex flex-col items-center gap-6 min-h-[350px] justify-center relative overflow-hidden shadow-2xl">
+        <div className="relative">
+            <div className={`${selectedStudent || isSpinning ? "fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 backdrop-blur-xl" : ""}`}>
+                {/* Only show "Roll" button inline, but show RESULT as full screen overlay */}
 
-                <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-neon-cyan/5 pointer-events-none" />
+                <div className={`${selectedStudent || isSpinning ? "w-full max-w-2xl glass-panel p-10 rounded-3xl border border-neon-pink/20 shadow-[0_0_50px_rgba(255,0,85,0.2)]" : "w-auto"}`}>
 
-                {!selectedStudent && !isSpinning && (
-                    <div className="text-center z-10">
-                        <h3 className="text-2xl font-bold mb-6 text-gray-200">Classroom Randomizer</h3>
-                        <button
-                            onClick={spin}
-                            className="btn-primary flex items-center gap-3 px-10 py-5 text-xl tracking-wide"
-                        >
-                            <User size={24} /> Pick Student
-                        </button>
-                    </div>
-                )}
+                    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-neon-cyan/5 pointer-events-none" />
 
-                {(selectedStudent || isSpinning) && (
-                    <div className="flex flex-col items-center z-10 w-full">
-                        <motion.div
-                            key={selectedStudent?.name}
-                            initial={{ scale: 0.8, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="text-5xl font-black font-space-grotesk text-center mb-2 tracking-tighter text-white drop-shadow-xl"
-                        >
-                            {selectedStudent?.name}
-                        </motion.div>
-
-                        <div className="text-sm font-mono text-gray-400 mb-8 uppercase tracking-widest border px-3 py-1 rounded-full border-white/10">
-                            {selectedStudent?.role === 'Teacher' ? 'Teacher' : `Student • Grade ${selectedStudent?.grade}`}
-                        </div>
-
-                        {showMessage && (
-                            <motion.div
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                className={`p-8 rounded-2xl border-l-4 w-full max-w-2xl shadow-lg relative overflow-hidden backdrop-blur-md ${messageType === 'roast' ? 'bg-red-500/10 border-red-500 text-red-100 shadow-[0_0_30px_rgba(220,38,38,0.2)]' : 'bg-green-500/10 border-green-500 text-green-100 shadow-[0_0_30px_rgba(34,197,94,0.2)]'}`}
+                    {!selectedStudent && !isSpinning && (
+                        <div className="text-center z-10 flex items-center gap-4">
+                            <button
+                                onClick={spin}
+                                className="bg-white/10 hover:bg-neon-pink/20 text-white hover:text-neon-pink border border-white/10 hover:border-neon-pink transition-all px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold uppercase tracking-wider shadow-lg hover:shadow-neon-pink/20"
                             >
-                                {/* Decorative Icon */}
-                                <div className="absolute -right-6 -bottom-6 opacity-10">
-                                    {messageType === 'roast' ? <Skull size={100} /> : <Sparkles size={100} />}
-                                </div>
-
-                                <div className="flex items-start gap-4 relative z-10">
-                                    {messageType === 'roast' ? <Skull className="shrink-0 text-red-500 mt-1" size={28} /> : <Sparkles className="shrink-0 text-green-500 mt-1" size={28} />}
-                                    <p className="text-2xl font-bold leading-tight font-space-grotesk">
-                                        {displayMessage}
-                                    </p>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {!isSpinning && (
-                            <button onClick={spin} className="mt-8 text-sm text-gray-500 hover:text-white flex items-center gap-2 transition-colors hover:bg-white/5 px-4 py-2 rounded-lg">
-                                <RefreshCw size={14} /> Spin Again
+                                <User size={16} /> Roll Roster
                             </button>
-                        )}
-                    </div>
-                )}
+                        </div>
+                    )}
+
+                    {(selectedStudent || isSpinning) && (
+                        <div className="flex flex-col items-center z-10 w-full">
+                            <motion.div
+                                key={selectedStudent?.name}
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                className="text-5xl font-black font-space-grotesk text-center mb-2 tracking-tighter text-white drop-shadow-xl"
+                            >
+                                {selectedStudent?.name}
+                            </motion.div>
+
+                            <div className="text-sm font-mono text-gray-400 mb-8 uppercase tracking-widest border px-3 py-1 rounded-full border-white/10">
+                                {selectedStudent?.role === 'Teacher' ? 'Teacher' : `Student • Grade ${selectedStudent?.grade}`}
+                            </div>
+
+                            {showMessage && (
+                                <motion.div
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    className={`p-8 rounded-2xl border-l-4 w-full max-w-2xl shadow-lg relative overflow-hidden backdrop-blur-md ${messageType === 'roast' ? 'bg-red-500/10 border-red-500 text-red-100 shadow-[0_0_30px_rgba(220,38,38,0.2)]' : 'bg-green-500/10 border-green-500 text-green-100 shadow-[0_0_30px_rgba(34,197,94,0.2)]'}`}
+                                >
+                                    {/* Decorative Icon */}
+                                    <div className="absolute -right-6 -bottom-6 opacity-10">
+                                        {messageType === 'roast' ? <Skull size={100} /> : <Sparkles size={100} />}
+                                    </div>
+
+                                    <div className="flex items-start gap-4 relative z-10">
+                                        {messageType === 'roast' ? <Skull className="shrink-0 text-red-500 mt-1" size={28} /> : <Sparkles className="shrink-0 text-green-500 mt-1" size={28} />}
+                                        <p className="text-2xl font-bold leading-tight font-space-grotesk">
+                                            {displayMessage}
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {!isSpinning && (
+                                <button onClick={spin} className="mt-8 text-sm text-gray-500 hover:text-white flex items-center gap-2 transition-colors hover:bg-white/5 px-4 py-2 rounded-lg">
+                                    <RefreshCw size={14} /> Spin Again
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
+
+            {/* Close Overlay Button */}
+            {(selectedStudent || isSpinning) && (
+                <button
+                    onClick={() => {
+                        setSelectedStudent(null);
+                        setIsSpinning(false);
+                        setShowMessage(false);
+                        if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+                    }}
+                    className="fixed top-8 right-8 z-[60] bg-white/10 p-3 rounded-full hover:bg-white/20 text-white"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                </button>
+            )}
         </div>
     );
 }
