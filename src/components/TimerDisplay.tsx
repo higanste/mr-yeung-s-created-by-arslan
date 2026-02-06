@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { getRandomTimerMessage, getRandomEncouragement } from '@/data/classmates';
 
 interface TimerDisplayProps {
@@ -37,6 +37,9 @@ export const TimerDisplay = ({
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [finishMessage, setFinishMessage] = useState("");
   const [encouragement, setEncouragement] = useState("");
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
@@ -58,9 +61,26 @@ export const TimerDisplay = ({
     onStart(secs);
   };
 
-  const handleFinishMessageGenerate = () => {
+  const handleFinishMessageGenerate = useCallback(() => {
     setFinishMessage(getRandomTimerMessage());
-  };
+  }, []);
+
+  const speakFinishMessage = useCallback((message: string) => {
+    if (!voiceEnabled || !voiceSupported) {
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(message);
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    utterance.lang = 'en-US';
+    window.speechSynthesis.speak(utterance);
+  }, [voiceEnabled, voiceSupported, selectedVoice]);
 
   const presetTimes = [
     { label: '1 min', seconds: 60 },
@@ -69,10 +89,44 @@ export const TimerDisplay = ({
     { label: '5 min', seconds: 300 },
   ];
 
-  // Generate finish message when timer ends
-  if (isFinished && !finishMessage) {
-    handleFinishMessageGenerate();
-  }
+  useEffect(() => {
+    if (isFinished && !finishMessage) {
+      handleFinishMessageGenerate();
+    }
+  }, [isFinished, finishMessage, handleFinishMessageGenerate]);
+
+  useEffect(() => {
+    const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+    setVoiceSupported(supported);
+
+    if (!supported) {
+      return;
+    }
+
+    const pickVoice = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length === 0) {
+        return;
+      }
+      const preferred =
+        voices.find((voice) => voice.lang === 'en-US' && /Google|Microsoft|Apple/i.test(voice.name)) ||
+        voices.find((voice) => voice.lang === 'en-US') ||
+        voices[0];
+      setSelectedVoice(preferred || null);
+    };
+
+    pickVoice();
+    window.speechSynthesis.addEventListener('voiceschanged', pickVoice);
+    return () => {
+      window.speechSynthesis.removeEventListener('voiceschanged', pickVoice);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (isFinished && finishMessage) {
+      speakFinishMessage(finishMessage);
+    }
+  }, [finishMessage, isFinished, speakFinishMessage]);
 
   return (
     <motion.div
@@ -132,11 +186,12 @@ export const TimerDisplay = ({
               <button
                 onClick={() => {
                   onPlayClick?.();
-                  setFinishMessage(getRandomTimerMessage());
+                  const nextMessage = getRandomTimerMessage();
+                  setFinishMessage(nextMessage);
                 }}
                 className="mt-3 text-sm text-accent hover:text-accent/80 underline transition-colors"
               >
-                🎲 Another roast?
+                Another roast?
               </button>
             </motion.div>
           )}
@@ -227,7 +282,7 @@ export const TimerDisplay = ({
           </AnimatePresence>
         </div>
       ) : (
-        <div className="flex gap-3 justify-center">
+        <div className="flex flex-wrap gap-3 justify-center">
           {isPaused ? (
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -236,9 +291,9 @@ export const TimerDisplay = ({
                 onPlayResume?.();
                 onResume();
               }}
-              className="btn-accent"
+              className="btn-accent min-w-[110px]"
             >
-              ▶️ Resume
+              Resume
             </motion.button>
           ) : isRunning ? (
             <motion.button
@@ -248,9 +303,9 @@ export const TimerDisplay = ({
                 onPlayPause?.();
                 onPause();
               }}
-              className="btn-secondary"
+              className="btn-secondary min-w-[110px]"
             >
-              ⏸️ Pause
+              Pause
             </motion.button>
           ) : null}
           <motion.button
@@ -261,12 +316,28 @@ export const TimerDisplay = ({
               setFinishMessage("");
               onStop();
             }}
-            className="btn-secondary"
+            className="btn-secondary min-w-[110px]"
           >
-            ⏹️ Stop
+            Stop
           </motion.button>
         </div>
       )}
+
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1">
+          Voice roast:
+        </span>
+        <button
+          type="button"
+          onClick={() => setVoiceEnabled((prev) => !prev)}
+          className="px-2 py-1 rounded-full bg-secondary/70 text-foreground transition-colors hover:bg-secondary"
+        >
+          {voiceEnabled ? 'On' : 'Off'}
+        </button>
+        {!voiceSupported && (
+          <span className="text-xs text-muted-foreground">(Not supported)</span>
+        )}
+      </div>
 
       {/* Class info badge */}
       <motion.div
@@ -275,7 +346,7 @@ export const TimerDisplay = ({
         transition={{ delay: 0.5 }}
         className="mt-6 text-xs text-muted-foreground"
       >
-        🏫 Dakota Collegiate • M10E-2 • E Slot
+        Dakota Collegiate • M10E-2 • E Slot
       </motion.div>
     </motion.div>
   );

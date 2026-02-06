@@ -3,9 +3,16 @@ import { motion } from 'framer-motion';
 interface HeaderProps {
   onOpenSettings?: () => void;
   onPlayHover?: () => void;
+  onToggleFullscreen?: () => void;
+  isFullscreen?: boolean;
 }
 
-export const Header = ({ onOpenSettings, onPlayHover }: HeaderProps) => {
+export const Header = ({
+  onOpenSettings,
+  onPlayHover,
+  onToggleFullscreen,
+  isFullscreen = false,
+}: HeaderProps) => {
   return (
     <motion.header 
       initial={{ opacity: 0, y: -20 }}
@@ -13,7 +20,7 @@ export const Header = ({ onOpenSettings, onPlayHover }: HeaderProps) => {
       transition={{ duration: 0.5 }}
       className="w-full py-6 px-4 md:px-8"
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="max-w-7xl mx-auto flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <motion.div 
           className="flex items-center gap-3"
           whileHover={{ scale: 1.02 }}
@@ -32,7 +39,7 @@ export const Header = ({ onOpenSettings, onPlayHover }: HeaderProps) => {
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-2">
               <span className="inline-flex items-center gap-1">
-                🏫 Dakota Collegiate
+                Dakota Collegiate
               </span>
               <span className="text-border">•</span>
               <span>M10E-2</span>
@@ -42,17 +49,25 @@ export const Header = ({ onOpenSettings, onPlayHover }: HeaderProps) => {
           </div>
         </motion.div>
         
-        <motion.div 
-          className="flex items-center gap-2"
+        <motion.div
+          className="flex items-center gap-2 self-start md:self-auto"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onToggleFullscreen}
+            className="text-xs text-muted-foreground bg-secondary/60 px-3 py-2 rounded-full transition-colors hover:text-foreground hover:bg-secondary"
+          >
+            {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+          </motion.button>
           <motion.span 
             className="hidden md:block text-xs text-muted-foreground bg-secondary/50 px-3 py-1.5 rounded-full"
             whileHover={{ scale: 1.05 }}
           >
-            DCI-25/26 📚
+            DCI-25/26
           </motion.span>
         </motion.div>
       </div>

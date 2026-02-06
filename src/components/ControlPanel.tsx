@@ -39,15 +39,15 @@ export const ControlPanel = ({
       {/* Decorative gradient */}
       <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-accent/5 pointer-events-none" />
       
-      <div className="relative z-10 flex flex-wrap items-center justify-center gap-4 md:gap-6">
+      <div className="relative z-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4 items-center">
         {/* Question Count */}
         <motion.div 
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2"
           whileHover={{ scale: 1.02 }}
           onHoverStart={onPlayHover}
         >
           <label className="text-sm font-medium text-foreground whitespace-nowrap flex items-center gap-1">
-            📝 Questions:
+            Questions:
           </label>
           <input
             type="number"
@@ -62,12 +62,12 @@ export const ControlPanel = ({
 
         {/* Columns */}
         <motion.div 
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2"
           whileHover={{ scale: 1.02 }}
           onHoverStart={onPlayHover}
         >
           <label className="text-sm font-medium text-foreground whitespace-nowrap flex items-center gap-1">
-            📊 Columns:
+            Columns:
           </label>
           <select
             value={columns}
@@ -86,12 +86,12 @@ export const ControlPanel = ({
 
         {/* Font Size */}
         <motion.div 
-          className="flex items-center gap-2"
+          className="flex items-center justify-center gap-2"
           whileHover={{ scale: 1.02 }}
           onHoverStart={onPlayHover}
         >
           <label className="text-sm font-medium text-foreground whitespace-nowrap flex items-center gap-1">
-            🔤 Font:
+            Font:
           </label>
           <input
             type="number"
@@ -105,7 +105,7 @@ export const ControlPanel = ({
         </motion.div>
 
         {/* Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3 md:col-span-2 lg:col-span-1">
           <motion.button
             whileHover={{ scale: 1.05, boxShadow: "0 10px 30px -10px hsl(var(--primary) / 0.5)" }}
             whileTap={{ scale: 0.95 }}
@@ -118,17 +118,16 @@ export const ControlPanel = ({
           >
             {isLoading ? (
               <>
-                <motion.div
+                <motion.span
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                >
-                  ⚙️
-                </motion.div>
+                  className="inline-flex w-4 h-4 rounded-full border-2 border-primary border-t-transparent"
+                />
                 Creating...
               </>
             ) : (
               <>
-                ✨ Create Questions
+                Create Questions
               </>
             )}
           </motion.button>
@@ -144,7 +143,7 @@ export const ControlPanel = ({
               showAnswers ? 'bg-accent/20 text-accent border-accent/50' : ''
             }`}
           >
-            {showAnswers ? '🙈 Hide Answers' : '👀 Show Answers'}
+            {showAnswers ? 'Hide Answers' : 'Show Answers'}
           </motion.button>
         </div>
       </div>
