@@ -24,30 +24,71 @@ export const classmates: Classmate[] = [
   { name: "Abdul Rahman Alharbali", firstName: "Abdul Rahman", grade: 9 },
 ];
 
-// Get a random classmate (excluding the creator Arslan and the teacher)
+// Get a random classmate (excluding the teacher)
 export const getRandomStudent = (): Classmate => {
-  const students = classmates.filter(c => !c.isTeacher && c.firstName !== "Arslan");
+  const students = classmates.filter(c => !c.isTeacher);
   return students[Math.floor(Math.random() * students.length)];
 };
 
-// Funny roast messages for when timer ends
-export const timerEndMessages = [
-  (name: string) => `⏰ TIME'S UP! ${name}, pencils down! No more thinking! 🧠💨`,
-  (name: string) => `🚨 TIMES UP! Hey ${name}, did you actually finish or just stare at the paper? 👀`,
-  (name: string) => `⏱️ DONE! ${name} is probably still on question 1... classic 😂`,
-  (name: string) => `🔔 TIME'S OVER! ${name}, stop writing! Mr. Yeung is watching! 👁️`,
-  (name: string) => `⚡ FINISHED! ${name} better have some answers ready! 📝`,
-  (name: string) => `🎯 TIME UP! ${name}, hope you didn't just draw doodles the whole time! 🎨`,
-  (name: string) => `💥 BOOM! Time's done! ${name}, let's see what you got! 💪`,
-  (name: string) => `🏁 THAT'S IT! ${name}, no more "just one more second" excuses! ⏳`,
-  (name: string) => `⭐ TIME! ${name}, time to show Mr. Yeung what you're made of! 🌟`,
-  (name: string) => `🔥 DONE! ${name}, hope your brain didn't overheat! 🧠🔥`,
-  (name: string) => `📢 ATTENTION! Time's up! ${name}, stop pretending to calculate! 🤓`,
-  (name: string) => `🎪 IT'S OVER! ${name} probably wrote their name really fancy at least! ✨`,
-  (name: string) => `⚠️ TIME! ${name}, remember: guessing is a valid strategy! 🎲`,
-  (name: string) => `🌈 COMPLETE! ${name}, math is just spicy counting anyway! 🌶️`,
-  (name: string) => `🚀 FINISHED! ${name}, to the moon with those answers! 🌙`,
+const roastOpeners = [
+  "Time is up",
+  "Timer finished",
+  "Clock stopped",
+  "Final bell",
+  "Time is over",
+  "Pencils down",
+  "Submission time",
+  "That's the buzzer",
+  "End of round",
+  "No more time",
 ];
+
+const roastSetups = [
+  "did you actually finish or just stare at the paper",
+  "is still on question one",
+  "is about to negotiate for five more seconds",
+  "made the bold choice to rewrite the question instead of solving it",
+  "is hoping effort marks can carry today",
+  "just discovered that math is not a spectator sport",
+  "turned the margin into a doodle museum",
+  "is about to speed-run the last page",
+  "used the calculator as emotional support",
+  "is looking for the hidden bonus question",
+  "spent more time on the title than the answers",
+  "is about to claim a last-second breakthrough",
+  "is trying to solve it with vibes",
+  "is practicing their dramatic sigh",
+  "is about to ask if this will be on the test",
+  "is writing a love letter to the quadratic formula",
+  "is inventing new numbers to make it work",
+  "is still deciding which pencil to trust",
+  "is sure the answer is 42",
+  "is fighting for partial credit",
+];
+
+const roastEnders = [
+  "show us what you got",
+  "that was ambitious",
+  "respect the confidence",
+  "bold strategy",
+  "classic move",
+  "legendary effort",
+  "speed mode next time",
+  "time to turn in",
+  "no extra credit for vibes",
+  "Mr. Yeung is watching",
+  "grade 9 energy",
+  "all eyes on the paper",
+  "make it count",
+  "wrap it up",
+  "final answer",
+];
+
+export const timerEndMessages = roastOpeners.flatMap((opener) =>
+  roastSetups.flatMap((setup) =>
+    roastEnders.map((ender) => (name: string) => `${opener}, ${name}. ${setup}. ${ender}.`)
+  )
+);
 
 // Get a random timer end message with a random student name
 export const getRandomTimerMessage = (): string => {
@@ -58,13 +99,13 @@ export const getRandomTimerMessage = (): string => {
 
 // Encouraging messages that appear randomly
 export const encouragingMessages = [
-  "You got this, Dakota Collegiate! 💪",
-  "M10E-2 is the best class! 🏆",
-  "Mr. Yeung believes in you! 📚",
-  "Math is just organized thinking! 🧠",
-  "Focus mode: ACTIVATED 🎯",
-  "Grade 9 squad represent! 🔥",
-  "Dakota Collegiate excellence! ⭐",
+  "You have this, Dakota Collegiate.",
+  "M10E-2 is focused.",
+  "Mr. Yeung believes in you.",
+  "Math is organized thinking.",
+  "Focus mode activated.",
+  "Grade 9 squad energy.",
+  "Dakota Collegiate excellence.",
 ];
 
 export const getRandomEncouragement = (): string => {

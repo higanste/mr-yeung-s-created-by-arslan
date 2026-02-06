@@ -115,6 +115,7 @@
 @layer components {
   .glass-card {
     @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg;
+    background: linear-gradient(135deg, hsl(var(--card) / 0.95), hsl(var(--card) / 0.75));
   }
 
   .topic-card {
@@ -197,6 +198,13 @@
 }
 
 @layer utilities {
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.25) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.25) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
   .animate-fade-in {
     animation: fadeIn 0.4s ease-out forwards;
   }
