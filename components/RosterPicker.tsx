@@ -51,13 +51,21 @@ export const RosterPicker = forwardRef<RosterRef>((props, ref) => {
     // Text-To-Speech
     const speak = (text: string) => {
         if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Stop any previous speech
             const cleanText = text.replace(/([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF])/g, '');
             const utterance = new SpeechSynthesisUtterance(cleanText);
+
+            // Try to find a "good" voice
             const voices = window.speechSynthesis.getVoices();
-            const preferred = voices.find(v => v.name.includes('Google US English')) || voices[0];
+            // User requested "real human free voice". "Google US English" is usually the best free browser one.
+            const preferred = voices.find(v => v.name.includes('Google US English')) ||
+                voices.find(v => v.name.includes('Microsoft Zira')) ||
+                voices.find(v => v.lang.startsWith('en-US')) ||
+                voices[0];
+
             if (preferred) utterance.voice = preferred;
-            utterance.rate = 1.1;
-            utterance.pitch = messageType === 'roast' ? 0.8 : 1.2;
+            utterance.rate = 1.0; // Slightly slower for clarity
+            utterance.pitch = 1.0; // Natural pitch
             window.speechSynthesis.speak(utterance);
         }
     };
@@ -110,7 +118,8 @@ export const RosterPicker = forwardRef<RosterRef>((props, ref) => {
         }
 
         try {
-            const soundFile = type === 'roast' ? '/sounds/laugh.mp3' : '/sounds/victory.mp3';
+            // Replaced inappropriate sounds with a simple "pop" or "click" for feedback
+            const soundFile = '/sounds/click.mp3';
             const audio = new Audio(soundFile);
             audio.volume = 0.5;
             audio.play().catch(e => console.log("Audio play failed", e));
@@ -124,10 +133,10 @@ export const RosterPicker = forwardRef<RosterRef>((props, ref) => {
 
             let intro = "";
             if (type === 'roast') {
-                const intros = ["Oh no.", "Yikes.", "Listen up.", "Roast incoming.", "Bruh."];
+                const intros = ["Damn.", "Listen.", "Hold up.", "Yo.", "Real talk."];
                 intro = intros[Math.floor(Math.random() * intros.length)];
             } else {
-                const intros = ["Great job!", "Nice work!", "Look at that!", "Wow!"];
+                const intros = ["Nice.", "W.", "Let's go.", "Huge W."];
                 intro = intros[Math.floor(Math.random() * intros.length)];
             }
 

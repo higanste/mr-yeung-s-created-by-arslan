@@ -18,7 +18,7 @@ export function Timer({ onFinish }: TimerProps) {
 
     useEffect(() => {
         beepRef.current = new Audio('/sounds/click.mp3');
-        endRef.current = new Audio('/sounds/victory.mp3'); // Fallback finish sound
+        endRef.current = new Audio('/sounds/click.mp3'); // Fallback finish sound
     }, []);
 
     useEffect(() => {
@@ -27,13 +27,17 @@ export function Timer({ onFinish }: TimerProps) {
         if (isRunning && timeLeft > 0) {
             interval = setInterval(() => {
                 setTimeLeft((prev) => {
+                    // INTENSE MODE: Last 10 Seconds
                     if (prev <= 11 && prev > 1 && !isMuted) {
                         try {
-                            const beep = new Audio('/sounds/click.mp3');
-                            beep.volume = 0.3;
-                            beep.play().catch(() => { });
+                            // Play a ticking sound (reusing click for now as placeholder for "tick")
+                            const tick = new Audio('/sounds/click.mp3');
+                            tick.volume = 0.5 + ((10 - prev) * 0.05); // Get louder
+                            tick.playbackRate = 1.5; // Faster tick
+                            tick.play().catch(() => { });
                         } catch (e) { }
                     }
+
                     if (prev <= 1) {
                         onFinish();
                         setIsRunning(false);
@@ -54,9 +58,9 @@ export function Timer({ onFinish }: TimerProps) {
     };
 
     return (
-        <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg">
+        <div className={`flex items-center gap-4 border px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg transition-all duration-300 ${timeLeft <= 10 && timeLeft > 0 && isRunning ? 'bg-red-500/20 border-red-500 animate-shake shadow-[0_0_50px_rgba(255,0,0,0.4)]' : 'bg-white/5 border-white/10'}`}>
             {/* Display */}
-            <div className={`font-mono text-4xl font-bold tracking-widest tabular-nums ${timeLeft <= 10 && timeLeft > 0 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+            <div className={`font-mono text-4xl font-bold tracking-widest tabular-nums ${timeLeft <= 10 && timeLeft > 0 ? 'text-red-500 animate-pulse scale-110' : 'text-white'}`}>
                 {formatTime(timeLeft)}
             </div>
 
