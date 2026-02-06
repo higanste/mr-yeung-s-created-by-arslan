@@ -1,150 +1,153 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { generateQuestions, Question } from "@/lib/generator";
-import { Topic, TOPICS } from "@/lib/topics";
-import { TopicSelector } from "@/components/TopicSelector";
-import { QuestionGrid } from "@/components/QuestionGrid";
-import { Timer } from "@/components/Timer";
-import { RosterPicker } from "@/components/RosterPicker";
 import { Footer } from "@/components/Footer";
-import { Sliders, RefreshCcw, Eye, EyeOff } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { QuestionGrid } from "@/components/QuestionGrid";
+import { RosterPicker, RosterRef } from "@/components/RosterPicker";
+import { Timer } from "@/components/Timer";
+import { TopicSelector } from "@/components/TopicSelector";
+import { generateQuestion } from "@/lib/generator";
+import { Question } from "@/lib/types";
+import { AnimatePresence, motion } from "framer-motion";
+import { Settings, RefreshCw, Grid2X2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Navbar } from "@/components/Navbar";
+import { Mission } from "@/components/Mission";
 
 export default function Home() {
-  const [selectedTopic, setSelectedTopic] = useState<Topic>(TOPICS[0]); // Default to first
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [showAnswers, setShowAnswers] = useState(false);
-
-  // Settings
   const [difficulty, setDifficulty] = useState(1);
-  const [count, setCount] = useState(10);
-  const [columns, setColumns] = useState(2);
+  const [topic, setTopic] = useState("number");
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [showSettings, setShowSettings] = useState(false);
+  const [showAnswers, setShowAnswers] = useState(false);
+  const [showMission, setShowMission] = useState(false);
 
-  const handleGenerate = () => {
-    const q = generateQuestions(selectedTopic.id, count, difficulty);
-    setQuestions(q);
+  const rosterRef = useRef<RosterRef>(null);
+
+  const generateNewQuestions = () => {
+    const newQs = Array(6).fill(null).map((_, i) => generateQuestion(topic, difficulty));
+    setQuestions(newQs);
     setShowAnswers(false);
   };
 
-  // Generate on mount
   useEffect(() => {
-    handleGenerate();
-  }, []); // Empty dependency array ensures it runs only once on mount
+    generateNewQuestions();
+  }, [topic, difficulty]);
+
+  const handleTimerFinish = () => {
+    if (rosterRef.current) {
+      rosterRef.current.spin();
+    }
+  };
 
   return (
-    <main className="h-screen w-full flex flex-col bg-bg-deep overflow-hidden">
-      {/* Header - Fixed Height */}
-      <header className="flex-none w-full p-4 flex justify-between items-center z-40 bg-black/40 border-b border-white/5 backdrop-blur-md">
+    <main className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-neon-cyan/30 selection:text-neon-cyan">
+      {/* Background Noise/Gradient */}
+      <div className="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 pointer-events-none" />
+
+      {/* Header */}
+      <header className="relative z-50 border-b border-white/5 bg-black/50 backdrop-blur-md p-4 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-neon-cyan/20 flex items-center justify-center border border-neon-cyan shadow-[0_0_15px_rgba(0,242,234,0.3)]">
-            <span className="font-bold text-neon-cyan">MY</span>
+          <div className="w-12 h-12 bg-gradient-to-tr from-neon-pink to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-neon-pink/20">
+            <span className="font-space-grotesk font-bold text-xl text-white">MY</span>
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white mb-0 leading-none">Mr. Yeung&#39;s Math Challenge</h1>
-            <p className="text-xs text-gray-500 mt-1">Class Tool • v1.1</p>
+            <h1 className="text-2xl font-black font-space-grotesk tracking-tight text-white">
+              Mr Yeungs <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan to-blue-500">M10E-2</span>
+            </h1>
+            <p className="text-xs text-gray-500 font-mono uppercase tracking-widest">Math Challenge v2.0</p>
           </div>
         </div>
 
         <div className="flex items-center gap-6">
-          <Timer />
-          <button onClick={() => setShowSettings(!showSettings)} className="text-gray-400 hover:text-white transition-colors">
-            <Sliders size={20} />
-          </button>
+          <Navbar onMissionClick={() => setShowMission(true)} />
         </div>
       </header>
 
-      {/* Main Content Area - FLEX GROW to fill screen */}
-      <div className="flex-1 flex flex-col relative overflow-hidden">
+      {/* Control Bar */}
+      <div className="relative z-40 border-b border-white/5 bg-white/5 backdrop-blur-sm p-4 flex flex-wrap items-center justify-center gap-6">
+        <Timer onFinish={handleTimerFinish} />
 
-        {/* Controls Bar */}
-        <div className="flex-none p-4 flex flex-wrap justify-between items-center gap-4 border-b border-white/5 bg-white/[0.02]">
-          <div className="flex items-center gap-4">
-            <TopicSelector
-              selectedTopic={selectedTopic}
-              onSelect={(t) => {
-                setSelectedTopic(t);
-              }}
-            />
+        <div className="h-8 w-px bg-white/10 hidden md:block" />
 
-            <button
-              onClick={handleGenerate}
-              className="btn-primary flex items-center gap-2 px-6 py-2 text-sm uppercase tracking-wider"
-            >
-              <RefreshCcw size={16} /> Generate
-            </button>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setShowSettings(!showSettings)} className="bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white p-3 rounded-xl transition-all border border-white/5 hover:border-white/10 flex items-center gap-2">
+            <Settings size={20} className={showSettings ? "animate-spin-slow" : ""} />
+            <span className="text-sm font-bold uppercase tracking-wider hidden sm:inline">Settings</span>
+          </button>
 
-            <button
-              onClick={() => setShowAnswers(!showAnswers)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-sm transition-all border ${showAnswers ? 'bg-neon-green/10 border-neon-green text-neon-green' : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'}`}
-            >
-              {showAnswers ? <><EyeOff size={16} /> Answers Visible</> : <><Eye size={16} /> Show Answers</>}
-            </button>
-          </div>
+          <button onClick={generateNewQuestions} className="bg-neon-cyan/10 hover:bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/20 hover:border-neon-cyan/50 p-3 rounded-xl transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(0,242,234,0.1)] hover:shadow-[0_0_30px_rgba(0,242,234,0.2)]">
+            <RefreshCw size={20} />
+            <span className="text-sm font-bold uppercase tracking-wider hidden sm:inline">Refresh</span>
+          </button>
         </div>
+      </div>
 
-        {/* Settings Panel Overlay */}
+      <div className="flex-1 flex flex-col relative overflow-hidden">
+        {/* SETTINGS PANEL OVERLAY */}
         <AnimatePresence>
           {showSettings && (
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="absolute top-0 left-0 w-full z-30 p-4 bg-black/90 backdrop-blur-xl border-b border-neon-cyan/20 shadow-2xl"
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+              className="absolute top-0 left-0 w-full z-30 p-8 bg-black/95 backdrop-blur-2xl border-b border-neon-cyan/20 shadow-2xl"
             >
-              <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="space-y-2">
-                  <label className="text-sm text-gray-400 uppercase tracking-widest font-mono">Difficulty</label>
-                  <input
-                    type="range" min="1" max="10"
-                    value={difficulty}
-                    onChange={(e) => setDifficulty(parseInt(e.target.value))}
-                    className="w-full accent-neon-cyan h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
+              <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div>
+                  <h3 className="text-neon-cyan font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
+                    <Grid2X2 size={18} /> Topic Selection
+                  </h3>
+                  <TopicSelector
+                    currentTopic={topic}
+                    onSelect={(t) => { setTopic(t); setShowSettings(false); }}
                   />
-                  <div className="text-right text-neon-cyan font-mono text-xl">{difficulty}</div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-gray-400 uppercase tracking-widest font-mono">Count</label>
-                  <input
-                    type="range" min="4" max="20" step="2"
-                    value={count}
-                    onChange={(e) => setCount(parseInt(e.target.value))}
-                    className="w-full accent-neon-pink h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
-                  />
-                  <div className="text-right text-neon-pink font-mono text-xl">{count}</div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm text-gray-400 uppercase tracking-widest font-mono">Columns</label>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4].map(c => (
-                      <button
-                        key={c}
-                        onClick={() => setColumns(c)}
-                        className={`flex-1 py-2 rounded text-sm font-mono ${columns === c ? 'bg-white text-black font-bold' : 'bg-white/5 hover:bg-white/10'}`}
-                      >
-                        {c}
-                      </button>
-                    ))}
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="text-neon-pink font-bold uppercase tracking-widest mb-6">Difficulty Level</h3>
+                    <input
+                      type="range"
+                      min="1" max="10"
+                      value={difficulty}
+                      onChange={(e) => setDifficulty(parseInt(e.target.value))}
+                      className="w-full accent-neon-pink h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <div className="flex justify-between mt-2 text-xs font-mono text-gray-500">
+                      <span>Easy</span>
+                      <span className="text-neon-pink font-bold text-lg">{difficulty}</span>
+                      <span>Hard</span>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              <button onClick={() => setShowSettings(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white">Close</button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Question Grid - FILLS REMAINING SPACE */}
-        {/* Question Grid - FILLS REMAINING SPACE */}
-        <div className="flex-1 w-full p-4 overflow-hidden relative">
-          <QuestionGrid questions={questions} showAnswers={showAnswers} columns={columns} />
+        {/* Main Content */}
+        <div className="flex-1 p-6 md:p-10 max-w-7xl mx-auto w-full flex flex-col gap-8 relative z-10">
+          <QuestionGrid
+            questions={questions}
+            showAnswers={showAnswers}
+            onToggleAnswers={() => setShowAnswers(!showAnswers)}
+            onRefreshQuestion={(index) => {
+              const newQs = [...questions];
+              newQs[index] = generateQuestion(topic, difficulty);
+              setQuestions(newQs);
+            }}
+          />
         </div>
 
-        {/* Roaster / Picker - Absolute Bottom Right or Toggle? Let's make it a small persistent integrated bar at bottom */}
-        <div className="flex-none border-t border-white/5 bg-black/40 backdrop-blur-sm p-3 flex justify-between items-center px-6">
-          <span className="text-xs text-gray-500 font-mono tracking-widest uppercase">Mr. Yeung&#39;s Class • 2026</span>
-          <RosterPicker />
-        </div>
+        <Footer>
+          <RosterPicker ref={rosterRef} />
+        </Footer>
       </div>
+
+      {/* MISSION OVERLAY */}
+      <Mission isOpen={showMission} onClose={() => setShowMission(false)} />
     </main>
   );
 }

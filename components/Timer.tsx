@@ -1,42 +1,25 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
 import { Play, Pause, RotateCcw, Volume2, VolumeX } from "lucide-react";
-import { motion } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
 
-interface Props {
-    onFinish?: () => void;
+interface TimerProps {
+    onFinish: () => void;
 }
 
-export function Timer({ onFinish }: Props) {
-    const [timeLeft, setTimeLeft] = useState(0); // in seconds
+export function Timer({ onFinish }: TimerProps) {
+    const [timeLeft, setTimeLeft] = useState(600); // 10 minutes default
     const [isRunning, setIsRunning] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
 
-    // Ref to hold audio for cleanup
+    // Sound refs
     const beepRef = useRef<HTMLAudioElement | null>(null);
+    const endRef = useRef<HTMLAudioElement | null>(null);
 
-    // Setup audio
     useEffect(() => {
-        // We assume these files will exist in /public/sounds/
-        beepRef.current = new Audio('/sounds/beep.mp3');
-        beepRef.current.volume = 0.5;
+        beepRef.current = new Audio('/sounds/click.mp3');
+        endRef.current = new Audio('/sounds/victory.mp3'); // Fallback finish sound
     }, []);
-
-    const playBeep = (freq: 'normal' | 'high') => {
-        if (isMuted || !beepRef.current) return;
-
-        // Create new instance for overlapping sounds
-        const aud = new Audio('/sounds/beep.mp3');
-        if (freq === 'high') aud.playbackRate = 1.5;
-        aud.play().catch(e => console.log("Audio play failed", e));
-    };
-
-    const playVictory = () => {
-        if (isMuted) return;
-        const aud = new Audio('/sounds/victory.mp3');
-        aud.play().catch(e => console.log("Victory play failed", e));
-    };
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -44,74 +27,98 @@ export function Timer({ onFinish }: Props) {
         if (isRunning && timeLeft > 0) {
             interval = setInterval(() => {
                 setTimeLeft((prev) => {
-                    const newVal = prev - 1;
-
-                    // Sound effects logic
-                    if (newVal <= 10 && newVal > 0) {
-                        playBeep(newVal <= 3 ? 'high' : 'normal');
+                    if (prev <= 11 && prev > 1 && !isMuted) {
+                        try {
+                            const beep = new Audio('/sounds/click.mp3');
+                            beep.volume = 0.3;
+                            beep.play().catch(() => { });
+                        } catch (e) { }
                     }
-
-                    if (newVal === 0) {
+                    if (prev <= 1) {
+                        onFinish();
                         setIsRunning(false);
-                        playVictory();
-                        if (onFinish) onFinish();
+                        return 0;
                     }
-
-                    return newVal;
+                    return prev - 1;
                 });
             }, 1000);
-        } else if (timeLeft === 0) {
-            setIsRunning(false);
         }
 
         return () => clearInterval(interval);
     }, [isRunning, timeLeft, isMuted, onFinish]);
 
-    const formatTime = (s: number) => {
-        const mins = Math.floor(s / 60);
-        const secs = s % 60;
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const addTime = (s: number) => {
-        setTimeLeft(prev => prev + s);
-    };
-
     return (
-        <div className="flex flex-col items-center gap-4">
-            {/* Main Display */}
-            <div className={`relative px-8 py-4 glass-panel rounded-2xl border transition-all duration-300 ${timeLeft <= 10 && timeLeft > 0 ? 'border-red-500 bg-red-500/10 shadow-[0_0_30px_rgba(239,68,68,0.4)] animate-pulse' : 'border-white/10'}`}>
-                <div className="text-6xl font-bold font-mono tracking-widest text-shadow-lg">
-                    {formatTime(timeLeft)}
-                </div>
+        <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-sm shadow-lg">
+            {/* Display */}
+            <div className={`font-mono text-4xl font-bold tracking-widest tabular-nums ${timeLeft <= 10 && timeLeft > 0 ? 'text-red-500 animate-pulse' : 'text-white'}`}>
+                {formatTime(timeLeft)}
             </div>
 
             {/* Controls */}
-            <div className="flex gap-2">
-                <button onClick={() => addTime(60)} className="btn-secondary">+1m</button>
-                <button onClick={() => addTime(180)} className="btn-secondary">+3m</button>
-                <button onClick={() => addTime(300)} className="btn-secondary">+5m</button>
-                <div className="w-4" /> {/* Spacer */}
+            <div className="flex items-center gap-2">
+                {!isRunning ? (
+                    <>
+                        <div className="flex flex-col gap-1 mr-2">
+                            {/* QUICK ADDS */}
+                            <div className="flex gap-1">
+                                <button onClick={() => setTimeLeft(60)} className="px-2 py-1 text-xs bg-white/5 hover:bg-neon-cyan/20 text-gray-400 hover:text-neon-cyan rounded transition-colors border border-white/5">+1m</button>
+                                <button onClick={() => setTimeLeft(180)} className="px-2 py-1 text-xs bg-white/5 hover:bg-neon-cyan/20 text-gray-400 hover:text-neon-cyan rounded transition-colors border border-white/5">+3m</button>
+                                <button onClick={() => setTimeLeft(300)} className="px-2 py-1 text-xs bg-white/5 hover:bg-neon-cyan/20 text-gray-400 hover:text-neon-cyan rounded transition-colors border border-white/5">+5m</button>
+                            </div>
+                            {/* CUSTOM INPUT */}
+                            <input
+                                type="text"
+                                placeholder="Custom (m)"
+                                className="w-full bg-black/20 border border-white/10 rounded px-2 py-1 text-xs text-white focus:outline-none focus:border-neon-cyan text-center transition-colors placeholder:text-gray-600"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        const val = parseFloat(e.currentTarget.value);
+                                        if (!isNaN(val) && val > 0) {
+                                            setTimeLeft(Math.floor(val * 60));
+                                            e.currentTarget.value = "";
+                                        }
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        <button
+                            onClick={() => setIsRunning(true)}
+                            className="bg-neon-green/20 hover:bg-neon-green/30 text-neon-green border border-neon-green/50 p-3 rounded-full transition-all hover:scale-105 active:scale-95"
+                        >
+                            <Play size={20} fill="currentColor" />
+                        </button>
+                    </>
+                ) : (
+                    <button
+                        onClick={() => setIsRunning(false)}
+                        className="bg-red-500/20 hover:bg-red-500/30 text-red-500 border border-red-500/50 p-3 rounded-full transition-all hover:scale-105 active:scale-95"
+                    >
+                        <Pause size={20} fill="currentColor" />
+                    </button>
+                )}
 
                 <button
-                    onClick={() => setIsRunning(!isRunning)}
-                    className={`p-3 rounded-full transition-all ${isRunning ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'}`}
+                    onClick={() => {
+                        setIsRunning(false);
+                        setTimeLeft(0);
+                    }}
+                    className="hover:bg-white/10 text-gray-400 hover:text-red-400 p-2 rounded-full transition-colors"
                 >
-                    {isRunning ? <Pause size={24} /> : <Play size={24} />}
-                </button>
-
-                <button
-                    onClick={() => { setIsRunning(false); setTimeLeft(0); }}
-                    className="p-3 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30"
-                >
-                    <RotateCcw size={24} />
+                    <RotateCcw size={16} />
                 </button>
 
                 <button
                     onClick={() => setIsMuted(!isMuted)}
-                    className="p-3 rounded-full bg-white/5 text-gray-400 hover:bg-white/10"
+                    className={`p-2 rounded-full transition-colors ${isMuted ? 'text-red-400 bg-red-400/10' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
                 >
-                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                    {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
                 </button>
             </div>
         </div>
