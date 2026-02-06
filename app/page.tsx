@@ -40,7 +40,7 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-neon-cyan/30 selection:text-neon-cyan">
+    <main className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-neon-cyan/30 selection:text-neon-cyan pt-20">
       {/* Background Noise/Gradient */}
       <div className="fixed inset-0 z-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
       <div className="fixed inset-0 z-0 bg-gradient-to-br from-gray-900 via-black to-gray-900 pointer-events-none" />
